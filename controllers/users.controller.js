@@ -223,14 +223,14 @@ class UserController {
     }
     async userDetails(req,res){
         try {
-          const{id}=req.params
           
-          
-          let user=await User.findOne({_id:id})
+            const user = req.user; // Access user details set by `auth.authenticate`
+
+            let userWithoutSensitiveData = await User.findById(user._id).select('-password -_id -isDeleted -createdAt -updatedAt');
     
           if(user){
             return res.status(200).json({
-              status:true,
+              status:200,
               message:"User Details Fetched Successfully",
               user: {
                 id:user._id,
@@ -242,42 +242,45 @@ class UserController {
           }
           
         } catch (err) {
-          console.log("Server Error",err)
-        }
+            return res.status(500).send({
+                status: 500,
+                data: {},
+                message: err
+            })        }
       }
-      async updateUser(req,res){
-        try {
-          const{id}=req.params;
-          const{fullName,email}=req.body;
-          const newProfilePic=req.file?.filename
+    //   async updateUser(req,res){
+    //     try {
+    //       const{id}=req.params;
+    //       const{fullName,email}=req.body;
+    //       const newProfilePic=req.file?.filename
         
-          const existingUser=await User.findOne({_id:id})
-        //   if(!existingUser.isVerified){
-        //     return res.status(400).json({
-        //       status:false,
-        //       message:"User is not Verified"
-        //     })
-        //   }
+    //       const existingUser=await User.findOne({_id:id})
+    //     //   if(!existingUser.isVerified){
+    //     //     return res.status(400).json({
+    //     //       status:false,
+    //     //       message:"User is not Verified"
+    //     //     })
+    //     //   }
     
-          const updatedFeild={fullName,email}
+    //       const updatedFeild={fullName,email}
     
-          if(newProfilePic){
-            if(existingUser.profilePic){
-              deleteFile('uploads/profile',existingUser.profilePic)
-            }
-              updatedFeild.profilePic=newProfilePic
+    //       if(newProfilePic){
+    //         if(existingUser.profilePic){
+    //           deleteFile('uploads/profile',existingUser.profilePic)
+    //         }
+    //           updatedFeild.profilePic=newProfilePic
     
-          }
-          await User.updateOne({_id:id},updatedFeild)
-          return res.status(200).json({
-            message:"Updated SuccessFully",
-            updatedFeild
-          })
+    //       }
+    //       await User.updateOne({_id:id},updatedFeild)
+    //       return res.status(200).json({
+    //         message:"Updated SuccessFully",
+    //         updatedFeild
+    //       })
     
-        } catch (error) {
-          console.log("Something Went Worng",error)
-        }
-      }
+    //     } catch (error) {
+    //       console.log("Something Went Worng",error)
+    //     }
+    //   }
     
 }
 module.exports = new UserController();
